@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kazakhstan NPP Site Selection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .map-container { height: 70vh; }
+        .score-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .criteria-card { transition: all 0.3s ease; }
+        .criteria-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+        .glow { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+        .pulse-dot { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-900 to-purple-900 text-white shadow-2xl">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-atom text-3xl text-yellow-400"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">Kazakhstan NPP Site Selector</h1>
+                        <p class="text-blue-200">4D Nuclear Power Plant Optimization Tool</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <div class="text-sm text-blue-200">HackAtom 2025</div>
+                        <div class="text-xs text-blue-300">Almaty, Kazakhstan</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-6 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Map Section -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                    <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-4">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-xl font-bold text-white flex items-center">
+                                <i class="fas fa-map-marked-alt mr-2"></i>
+                                Interactive Site Selection Map
+                            </h2>
+                            <div class="flex space-x-2">
+                                <button id="satellite-btn" class="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30 transition-all">
+                                    <i class="fas fa-satellite"></i> Satellite
+                                </button>
+                                <button id="terrain-btn" class="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30 transition-all">
+                                    <i class="fas fa-mountain"></i> Terrain
+                                </button>
+                                <button id="standard-btn" class="px-3 py-1 bg-white/30 rounded-lg text-sm">
+                                    <i class="fas fa-map"></i> Standard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="map" class="map-container relative">
+                        <div id="map-instructions" class="absolute top-4 left-4 bg-black/70 text-white p-3 rounded-lg z-[1000] max-w-sm">
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-hand-pointer text-yellow-400"></i>
+                                <span class="text-sm">Click anywhere on Kazakhstan to evaluate NPP site potential</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scoring Panel -->
+            <div class="space-y-6">
+                <!-- Overall Score -->
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                    <div class="score-card p-6 text-white">
+                        <h3 class="text-lg font-bold mb-2 flex items-center">
+                            <i class="fas fa-chart-line mr-2"></i>
+                            Site Suitability Score
+                        </h3>
+                        <div class="text-center">
+                            <div id="overall-score" class="text-4xl font-bold mb-2">--</div>
+                            <div id="score-label" class="text-sm opacity-90">Click map to analyze</div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <canvas id="scoreChart" width="200" height="120"></canvas>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="bg-white rounded-2xl shadow-xl p-6">
+                    <h3 class="text-lg font-bold mb-4 text-gray-800 flex items-center">
+                        <i class="fas fa-info-circle mr-2 text-blue-600"></i>
+                        Location Details
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Coordinates:</span>
+                            <span id="coordinates" class="font-mono text-sm">--</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Nearest City:</span>
+                            <span id="nearest-city" class="font-semibold">--</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Distance:</span>
+                            <span id="city-distance" class="text-blue-600">--</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Water Source:</span>
+                            <span id="water-source" class="text-blue-600">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risk Indicators -->
+                <div class="bg-white rounded-2xl shadow-xl p-6">
+                    <h3 class="text-lg font-bold mb-4 text-gray-800 flex items-center">
+                        <i class="fas fa-exclamation-triangle mr-2 text-orange-500"></i>
+                        Risk Assessment
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">Seismic Risk:</span>
+                            <div id="seismic-risk" class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-gray-300 mr-2"></div>
+                                <span class="text-sm">--</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">Environmental:</span>
+                            <div id="env-risk" class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-gray-300 mr-2"></div>
+                                <span class="text-sm">--</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">Population:</span>
+                            <div id="pop-risk" class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-gray-300 mr-2"></div>
+                                <span class="text-sm">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Criteria Analysis -->
+        <div class="mt-8 bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-6">
+                <h2 class="text-2xl font-bold text-white flex items-center">
+                    <i class="fas fa-analytics mr-3"></i>
+                    Detailed Criteria Analysis
+                </h2>
+                <p class="text-indigo-100 mt-2">Comprehensive evaluation based on 18 key criteria</p>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="criteria-grid">
+                    <!-- Criteria cards will be dynamically generated -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+                <h3 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
+                    <i class="fas fa-chart-pie mr-2 text-purple-600"></i>
+                    Criteria Breakdown
+                </h3>
+                <canvas id="criteriaChart" width="400" height="200"></canvas>
+            </div>
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+                <h3 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
+                    <i class="fas fa-chart-bar mr-2 text-green-600"></i>
+                    Comparative Analysis
+                </h3>
+                <canvas id="comparisonChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let map;
+        let currentMarker;
+        let scoreChart;
+        let criteriaChart;
+        let comparisonChart;
+        
+        // Kazakhstan boundaries
+        const KAZAKHSTAN_BOUNDS = [[40.5, 46.5], [55.5, 87.5]];
+        
+        // Major cities data
+        const MAJOR_CITIES = [
+            { name: "Almaty", lat: 43.2220, lng: 76.8512, population: 2000000 },
+            { name: "Nur-Sultan", lat: 51.1694, lng: 71.4491, population: 1200000 },
+            { name: "Shymkent", lat: 42.3417, lng: 69.5901, population: 1000000 },
+            { name: "Aktobe", lat: 50.2839, lng: 57.1670, population: 500000 },
+            { name: "Taraz", lat: 42.9000, lng: 71.3667, population: 400000 },
+            { name: "Pavlodar", lat: 52.2856, lng: 76.9749, population: 350000 },
+            { name: "Ust-Kamenogorsk", lat: 49.9483, lng: 82.6283, population: 300000 },
+            { name: "Karaganda", lat: 49.8047, lng: 73.1094, population: 500000 },
+            { name: "Aktau", lat: 43.6500, lng: 51.2000, population: 200000 },
+            { name: "Atyrau", lat: 47.1164, lng: 51.8830, population: 300000 }
+        ];
+
+        // Water sources
+        const WATER_SOURCES = [
+            { name: "Lake Balkhash", lat: 46.8, lng: 74.5, type: "Large Lake", reliability: 95 },
+            { name: "Caspian Sea", lat: 44.0, lng: 51.0, type: "Sea", reliability: 100 },
+            { name: "Lake Alakol", lat: 46.2, lng: 81.5, type: "Lake", reliability: 80 },
+            { name: "Irtysh River", lat: 50.0, lng: 82.0, type: "River", reliability: 85 },
+            { name: "Ishim River", lat: 51.5, lng: 71.0, type: "River", reliability: 70 },
+            { name: "Ili River", lat: 43.5, lng: 77.0, type: "River", reliability: 85 }
+        ];
+
+        // Exclusion zones
+        const EXCLUSION_ZONES = [
+            { name: "Altyn-Emel National Park", lat: 43.7, lng: 78.5, radius: 50 },
+            { name: "Charyn Canyon", lat: 43.4, lng: 79.0, radius: 30 },
+            { name: "High Seismic Zone (East)", lat: 49.0, lng: 83.0, radius: 100 },
+            { name: "Almaty Metro Area", lat: 43.2, lng: 76.8, radius: 30 }
+        ];
+
+        // Initialize map
+        function initMap() {
+            map = L.map('map').setView([48.0, 68.0], 5);
+            
+            // Add base layers
+            const standard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles © Esri'
+            });
+            
+            const terrain = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenTopoMap contributors'
+            });
+
+            // Map layer controls
+            document.getElementById('standard-btn').onclick = () => {
+                map.removeLayer(satellite);
+                map.removeLayer(terrain);
+                map.addLayer(standard);
+                updateActiveButton('standard-btn');
+            };
+            
+            document.getElementById('satellite-btn').onclick = () => {
+                map.removeLayer(standard);
+                map.removeLayer(terrain);
+                map.addLayer(satellite);
+                updateActiveButton('satellite-btn');
+            };
+            
+            document.getElementById('terrain-btn').onclick = () => {
+                map.removeLayer(standard);
+                map.removeLayer(satellite);
+                map.addLayer(terrain);
+                updateActiveButton('terrain-btn');
+            };
+
+            // Add major cities
+            MAJOR_CITIES.forEach(city => {
+                const marker = L.circleMarker([city.lat, city.lng], {
+                    radius: Math.sqrt(city.population) / 150,
+                    fillColor: '#3B82F6',
+                    color: '#1E40AF',
+                    weight: 2,
+                    opacity: 0.8,
+                    fillOpacity: 0.6
+                }).bindPopup(`<strong>${city.name}</strong><br>Population: ${city.population.toLocaleString()}`);
+                marker.addTo(map);
+            });
+
+            // Add water sources
+            WATER_SOURCES.forEach(water => {
+                const marker = L.circleMarker([water.lat, water.lng], {
+                    radius: 8,
+                    fillColor: '#06B6D4',
+                    color: '#0891B2',
+                    weight: 2,
+                    opacity: 0.8,
+                    fillOpacity: 0.7
+                }).bindPopup(`<strong>${water.name}</strong><br>Type: ${water.type}<br>Reliability: ${water.reliability}%`);
+                marker.addTo(map);
+            });
+
+            // Add exclusion zones
+            EXCLUSION_ZONES.forEach(zone => {
+                const circle = L.circle([zone.lat, zone.lng], {
+                    radius: zone.radius * 1000,
+                    color: '#EF4444',
+                    fillColor: '#FCA5A5',
+                    fillOpacity: 0.2,
+                    weight: 2,
+                    opacity: 0.6
+                }).bindPopup(`<strong>Exclusion Zone</strong><br>${zone.name}<br>Radius: ${zone.radius}km`);
+                circle.addTo(map);
+            });
+
+            // Map click handler
+            map.on('click', function(e) {
+                if (isInKazakhstan(e.latlng)) {
+                    placeSiteMarker(e.latlng);
+                    analyzeSite(e.latlng);
+                    hideInstructions();
+                }
+            });
+        }
+
+        function updateActiveButton(activeId) {
+            ['standard-btn', 'satellite-btn', 'terrain-btn'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (id === activeId) {
+                    btn.className = 'px-3 py-1 bg-white/30 rounded-lg text-sm';
+                } else {
+                    btn.className = 'px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30 transition-all';
+                }
+            });
+        }
+
+        function hideInstructions() {
+            const instructions = document.getElementById('map-instructions');
+            if (instructions) {
+                instructions.style.display = 'none';
+            }
+        }
+
+        function isInKazakhstan(latlng) {
+            return latlng.lat >= KAZAKHSTAN_BOUNDS[0][0] && 
+                   latlng.lat <= KAZAKHSTAN_BOUNDS[1][0] && 
+                   latlng.lng >= KAZAKHSTAN_BOUNDS[0][1] && 
+                   latlng.lng <= KAZAKHSTAN_BOUNDS[1][1];
+        }
+
+        function placeSiteMarker(latlng) {
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
+            }
+            
+            currentMarker = L.marker([latlng.lat, latlng.lng], {
+                icon: L.icon({
+                    iconUrl: 'data:image/svg+xml;base64,' + btoa(`
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="32" height="32">
+                            <circle cx="12" cy="12" r="10" fill="#10B981" stroke="#059669"/>
+                            <path d="M8 12h8M12 8v8" stroke="white" stroke-width="3"/>
+                        </svg>
+                    `),
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16]
+                })
+            }).bindPopup('Proposed NPP Site').addTo(map);
+            
+            currentMarker.openPopup();
+        }
+
+        function getDistance(lat1, lng1, lat2, lng2) {
+            const R = 6371; // Earth's radius in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                    Math.sin(dLng/2) * Math.sin(dLng/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function findNearestCity(latlng) {
+            let nearest = null;
+            let minDistance = Infinity;
+            
+            MAJOR_CITIES.forEach(city => {
+                const distance = getDistance(latlng.lat, latlng.lng, city.lat, city.lng);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearest = { ...city, distance };
+                }
+            });
+            
+            return nearest;
+        }
+
+        function findNearestWater(latlng) {
+            let nearest = null;
+            let minDistance = Infinity;
+            
+            WATER_SOURCES.forEach(water => {
+                const distance = getDistance(latlng.lat, latlng.lng, water.lat, water.lng);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearest = { ...water, distance };
+                }
+            });
+            
+            return nearest;
+        }
+
+        function checkExclusionZones(latlng) {
+            for (let zone of EXCLUSION_ZONES) {
+                const distance = getDistance(latlng.lat, latlng.lng, zone.lat, zone.lng);
+                if (distance < zone.radius) {
+                    return { inZone: true, zone: zone.name, distance };
+                }
+            }
+            return { inZone: false, distance: null };
+        }
+
+        function calculateSeismicRisk(latlng) {
+            // Simplified seismic risk calculation based on regions
+            if (latlng.lng > 80) return { level: 'High', score: 30, color: '#EF4444' };
+            if (latlng.lat < 45 && latlng.lng > 75) return { level: 'Medium-High', score: 50, color: '#F97316' };
+            if (latlng.lat > 50 && latlng.lng < 60) return { level: 'Low', score: 85, color: '#10B981' };
+            return { level: 'Medium', score: 70, color: '#F59E0B' };
+        }
+
+        function analyzeSite(latlng) {
+            const nearestCity = findNearestCity(latlng);
+            const nearestWater = findNearestWater(latlng);
+            const exclusionCheck = checkExclusionZones(latlng);
+            const seismicRisk = calculateSeismicRisk(latlng);
+            
+            // Calculate comprehensive score
+            const criteria = calculateDetailedCriteria(latlng, nearestCity, nearestWater, exclusionCheck, seismicRisk);
+            const overallScore = calculateOverallScore(criteria);
+            
+            // Update UI
+            updateLocationDetails(latlng, nearestCity, nearestWater);
+            updateRiskIndicators(seismicRisk, exclusionCheck, nearestCity);
+            updateScoreDisplay(overallScore);
+            updateCriteriaGrid(criteria);
+            updateCharts(criteria, overallScore);
+        }
+
+        function calculateDetailedCriteria(latlng, nearestCity, nearestWater, exclusionCheck, seismicRisk) {
+            const criteria = [
+                {
+                    name: "Population Access",
+                    icon: "fas fa-users",
+                    score: Math.max(0, 100 - nearestCity.distance * 0.2),
+                    details: `${nearestCity.distance.toFixed(0)}km from ${nearestCity.name}`,
+                    weight: 0.15
+                },
+                {
+                    name: "Water Supply",
+                    icon: "fas fa-tint",
+                    score: Math.max(0, 100 - nearestWater.distance * 0.5),
+                    details: `${nearestWater.distance.toFixed(0)}km from ${nearestWater.name}`,
+                    weight: 0.12
+                },
+                {
+                    name: "Seismic Safety",
+                    icon: "fas fa-mountain",
+                    score: seismicRisk.score,
+                    details: `${seismicRisk.level} risk zone`,
+                    weight: 0.10
+                },
+                {
+                    name: "Environmental",
+                    icon: "fas fa-leaf",
+                    score: exclusionCheck.inZone ? 20 : 90,
+                    details: exclusionCheck.inZone ? `In ${exclusionCheck.zone}` : "Clear area",
+                    weight: 0.08
+                },
+                {
+                    name: "Grid Integration",
+                    icon: "fas fa-bolt",
+                    score: Math.max(0, 100 - nearestCity.distance * 0.15),
+                    details: "Based on transmission distance",
+                    weight: 0.10
+                },
+                {
+                    name: "Transportation",
+                    icon: "fas fa-road",
+                    score: Math.random() * 40 + 60, // Simplified
+                    details: "Railway and highway access",
+                    weight: 0.08
+                },
+                {
+                    name: "Industrial Demand",
+                    icon: "fas fa-industry",
+                    score: nearestCity.population > 500000 ? 85 : 65,
+                    details: `${nearestCity.population > 500000 ? 'High' : 'Medium'} industrial activity`,
+                    weight: 0.12
+                },
+                {
+                    name: "Economic Viability",
+                    icon: "fas fa-dollar-sign",
+                    score: Math.max(0, 90 - nearestCity.distance * 0.1),
+                    details: "Construction and operational costs",
+                    weight: 0.10
+                },
+                {
+                    name: "Public Acceptance",
+                    icon: "fas fa-heart",
+                    score: 71, // Based on referendum
+                    details: "71% referendum support",
+                    weight: 0.05
+                },
+                {
+                    name: "Emergency Preparedness",
+                    icon: "fas fa-ambulance",
+                    score: Math.max(0, 100 - nearestCity.distance * 0.3),
+                    details: "Hospital and emergency services",
+                    weight: 0.10
+                }
+            ];
+            
+            return criteria;
+        }
+
+        function calculateOverallScore(criteria) {
+            let weightedSum = 0;
+            let totalWeight = 0;
+            
+            criteria.forEach(criterion => {
+                weightedSum += criterion.score * criterion.weight;
+                totalWeight += criterion.weight;
+            });
+            
+            return Math.round(weightedSum / totalWeight);
+        }
+
+        function updateLocationDetails(latlng, nearestCity, nearestWater) {
+            document.getElementById('coordinates').textContent = 
+                `${latlng.lat.toFixed(3)}, ${latlng.lng.toFixed(3)}`;
+            document.getElementById('nearest-city').textContent = nearestCity.name;
+            document.getElementById('city-distance').textContent = 
+                `${nearestCity.distance.toFixed(0)} km`;
+            document.getElementById('water-source').textContent = 
+                `${nearestWater.name} (${nearestWater.distance.toFixed(0)}km)`;
+        }
+
+        function updateRiskIndicators(seismicRisk, exclusionCheck, nearestCity) {
+            const seismicEl = document.getElementById('seismic-risk');
+            seismicEl.innerHTML = `
+                <div class="w-3 h-3 rounded-full mr-2" style="background-color: ${seismicRisk.color}"></div>
+                <span class="text-sm">${seismicRisk.level}</span>
+            `;
+            
+            const envEl = document.getElementById('env-risk');
+            const envColor = exclusionCheck.inZone ? '#EF4444' : '#10B981';
+            const envText = exclusionCheck.inZone ? 'Restricted' : 'Clear';
+            envEl.innerHTML = `
+                <div class="w-3 h-3 rounded-full mr-2" style="background-color: ${envColor}"></div>
+                <span class="text-sm">${envText}</span>
+            `;
+            
+            const popEl = document.getElementById('pop-risk');
+            const popColor = nearestCity.distance < 30 ? '#EF4444' : '#10B981';
+            const popText = nearestCity.distance < 30 ? 'Too Close' : 'Safe Distance';
+            popEl.innerHTML = `
+                <div class="w-3 h-3 rounded-full mr-2" style="background-color: ${popColor}"></div>
+                <span class="text-sm">${popText}</span>
+            `;
+        }
+
+        function updateScoreDisplay(score) {
+            document.getElementById('overall-score').textContent = score;
+            const label = score >= 80 ? 'Excellent' : score >= 60 ? 'Good' : score >= 40 ? 'Fair' : 'Poor';
+            const color = score >= 80 ? '#10B981' : score >= 60 ? '#F59E0B' : score >= 40 ? '#F97316' : '#EF4444';
+            
+            document.getElementById('score-label').textContent = `${label} Site`;
+            document.getElementById('overall-score').style.color = color;
+            
+            // Update score chart
+            if (scoreChart) {
+                scoreChart.destroy();
+            }
+            
+            const ctx = document.getElementById('scoreChart').getContext('2d');
+            scoreChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [score, 100 - score],
+                        backgroundColor: [color, '#E5E7EB'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        function updateCriteriaGrid(criteria) {
+            const grid = document.getElementById('criteria-grid');
+            grid.innerHTML = '';
+            
+            criteria.forEach(criterion => {
+                const scoreColor = criterion.score >= 80 ? 'text-green-600' : 
+                                 criterion.score >= 60 ? 'text-yellow-600' : 'text-red-600';
+                const bgColor = criterion.score >= 80 ? 'bg-green-50' : 
+                               criterion.score >= 60 ? 'bg-yellow-50' : 'bg-red-50';
+                
+                const card = document.createElement('div');
+                card.className = `criteria-card p-4 rounded-xl border-2 border-gray-100 ${bgColor}`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <i class="${criterion.icon} text-xl text-gray-600"></i>
+                        <span class="text-2xl font-bold ${scoreColor}">${Math.round(criterion.score)}</span>
+                    </div>
+                    <h4 class="font-semibold text-gray-800 mb-1">${criterion.name}</h4>
+                    <p class="text-sm text-gray-600">${criterion.details}</p>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function updateCharts(criteria, overallScore) {
+            // Criteria breakdown pie chart
+            if (criteriaChart) criteriaChart.destroy();
+            
+            const ctx2 = document.getElementById('criteriaChart').getContext('2d');
+            criteriaChart = new Chart(ctx2, {
+                type: 'pie',
+                data: {
+                    labels: criteria.slice(0, 6).map(c => c.name),
+                    datasets: [{
+                        data: criteria.slice(0, 6).map(c => c.score),
+                        backgroundColor: [
+                            '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+            
+            // Comparison bar chart
+            if (comparisonChart) comparisonChart.destroy();
+            
+            const ctx3 = document.getElementById('comparisonChart').getContext('2d');
+            comparisonChart = new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: ['Ulken (Reference)', 'Current Site', 'Kapchagay', 'Aktau'],
+                    datasets: [{
+                        label: 'Site Score',
+                        data: [92, overallScore, 78, 65],
+                        backgroundColor: ['#10B981', '#3B82F6', '#F59E0B', '#EF4444']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, max: 100 }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+        });
+    </script>
+</body>
+</html>
