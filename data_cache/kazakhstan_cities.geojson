@@ -1,0 +1,35 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Almaty",
+        "population": 2000000,
+        "industrial_factor": 0.8
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          76.8512,
+          43.222
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nur-Sultan",
+        "population": 1200000,
+        "industrial_factor": 0.6
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          71.4491,
+          51.1694
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,421 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "region": "Almaty-Tien Shan Seismic Zone",
+        "risk_level": "High",
+        "score": 25,
+        "description": "Active fault systems along Tien Shan mountain range"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              75.0,
+              42.5
+            ],
+            [
+              76.5,
+              42.8
+            ],
+            [
+              77.8,
+              43.0
+            ],
+            [
+              78.5,
+              43.3
+            ],
+            [
+              79.2,
+              43.8
+            ],
+            [
+              79.0,
+              44.3
+            ],
+            [
+              78.2,
+              44.5
+            ],
+            [
+              77.0,
+              44.2
+            ],
+            [
+              76.0,
+              43.8
+            ],
+            [
+              75.2,
+              43.2
+            ],
+            [
+              75.0,
+              42.5
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": "East Kazakhstan-Altai Seismic Zone",
+        "risk_level": "High",
+        "score": 30,
+        "description": "Altai mountain region with complex fault networks"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              82.0,
+              48.2
+            ],
+            [
+              84.5,
+              48.0
+            ],
+            [
+              86.2,
+              49.0
+            ],
+            [
+              86.8,
+              49.8
+            ],
+            [
+              86.5,
+              50.5
+            ],
+            [
+              85.0,
+              50.8
+            ],
+            [
+              83.5,
+              50.3
+            ],
+            [
+              82.5,
+              49.5
+            ],
+            [
+              82.0,
+              48.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": "Balkhash-Alakol Moderate Zone",
+        "risk_level": "Medium",
+        "score": 65,
+        "description": "Transitional zone between stable platform and active margins"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              74.0,
+              45.5
+            ],
+            [
+              78.0,
+              45.0
+            ],
+            [
+              81.0,
+              46.0
+            ],
+            [
+              82.5,
+              47.5
+            ],
+            [
+              82.0,
+              48.0
+            ],
+            [
+              79.0,
+              48.2
+            ],
+            [
+              76.5,
+              47.8
+            ],
+            [
+              74.5,
+              47.0
+            ],
+            [
+              74.0,
+              45.5
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": "Central Kazakhstan Stable Platform",
+        "risk_level": "Low",
+        "score": 85,
+        "description": "Ancient crystalline basement with minimal seismic activity"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              65.0,
+              46.5
+            ],
+            [
+              72.0,
+              46.8
+            ],
+            [
+              74.0,
+              48.0
+            ],
+            [
+              73.5,
+              50.5
+            ],
+            [
+              71.0,
+              52.0
+            ],
+            [
+              68.0,
+              52.5
+            ],
+            [
+              66.0,
+              51.0
+            ],
+            [
+              65.5,
+              48.5
+            ],
+            [
+              65.0,
+              46.5
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": "West Kazakhstan-Caspian Stable Zone",
+        "risk_level": "Low",
+        "score": 80,
+        "description": "Caspian depression and Ural foreland with low seismic activity"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              47.0,
+              44.0
+            ],
+            [
+              55.0,
+              44.5
+            ],
+            [
+              60.0,
+              46.0
+            ],
+            [
+              62.0,
+              48.0
+            ],
+            [
+              60.5,
+              50.0
+            ],
+            [
+              57.0,
+              51.5
+            ],
+            [
+              52.0,
+              52.0
+            ],
+            [
+              48.0,
+              50.5
+            ],
+            [
+              47.0,
+              47.0
+            ],
+            [
+              47.0,
+              44.0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": "North Kazakhstan Platform",
+        "risk_level": "Low",
+        "score": 88,
+        "description": "Stable Siberian platform extension with very low seismic risk"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              60.0,
+              50.0
+            ],
+            [
+              70.0,
+              50.5
+            ],
+            [
+              75.0,
+              52.0
+            ],
+            [
+              76.0,
+              54.0
+            ],
+            [
+              74.0,
+              55.0
+            ],
+            [
+              68.0,
+              55.2
+            ],
+            [
+              62.0,
+              54.5
+            ],
+            [
+              60.0,
+              52.0
+            ],
+            [
+              60.0,
+              50.0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": "Mangystau Peninsula Moderate Zone",
+        "risk_level": "Medium",
+        "score": 70,
+        "description": "Coastal zone with moderate tectonic activity"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              50.0,
+              42.5
+            ],
+            [
+              53.5,
+              42.0
+            ],
+            [
+              55.0,
+              43.5
+            ],
+            [
+              54.0,
+              45.0
+            ],
+            [
+              52.0,
+              45.5
+            ],
+            [
+              50.5,
+              44.0
+            ],
+            [
+              50.0,
+              42.5
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": "South Kazakhstan Transitional Zone",
+        "risk_level": "Medium",
+        "score": 60,
+        "description": "Transitional area between Tien Shan and stable platform"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              66.0,
+              40.8
+            ],
+            [
+              74.0,
+              41.0
+            ],
+            [
+              75.0,
+              42.5
+            ],
+            [
+              73.5,
+              43.5
+            ],
+            [
+              70.0,
+              43.8
+            ],
+            [
+              67.5,
+              43.0
+            ],
+            [
+              66.0,
+              42.0
+            ],
+            [
+              66.0,
+              40.8
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
